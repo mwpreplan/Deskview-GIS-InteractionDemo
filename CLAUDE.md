@@ -13,6 +13,11 @@ no dependencies beyond CDN scripts (Leaflet 1.9.4, ml5 v1).
 Consult these before changing scope; the phases (Crawl → Walk → Run) define
 the feature checkpoints.
 
+Docs in the database with Category = "Agents" are Claude Code agent designs
+(see the "Agent Template" page). When one has Status `Ready`, sync it into
+this repo as `.claude/agents/<agent-name>.md`; the Notion doc is the source
+of truth for the agent's prompt, tools, and boundaries.
+
 ## Architecture
 
 - `index.html` — start screen (source picker), map, PiP, HUD, toolbar
