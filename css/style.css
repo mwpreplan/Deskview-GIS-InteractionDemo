@@ -1,0 +1,218 @@
+:root {
+  --bg: #10141a;
+  --panel: rgba(18, 24, 33, 0.92);
+  --panel-border: rgba(255, 255, 255, 0.12);
+  --text: #e8edf4;
+  --text-dim: #93a1b5;
+  --accent: #38bdf8;
+  --accent-2: #f472b6;
+  --ok: #4ade80;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+}
+
+.hidden { display: none !important; }
+
+/* ---------- Start screen ---------- */
+
+#start-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 30%, #1b2432 0%, var(--bg) 70%);
+  z-index: 1000;
+}
+
+.start-card {
+  max-width: 520px;
+  padding: 40px 44px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  text-align: center;
+}
+
+.start-card h1 { margin: 0 0 8px; font-size: 32px; }
+.tagline { margin: 0 0 28px; color: var(--text-dim); }
+
+.source-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+button.primary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  padding: 14px 18px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  background: #1d2735;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+button.primary:hover { border-color: var(--accent); transform: translateY(-1px); }
+button.primary small { font-weight: 400; color: var(--text-dim); }
+
+#camera-picker {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+#camera-picker select {
+  flex: 1;
+  padding: 8px 10px;
+  background: #1d2735;
+  color: var(--text);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.start-status { margin-top: 14px; min-height: 20px; color: var(--accent); font-size: 14px; }
+.start-status.error { color: #f87171; }
+
+.gesture-legend {
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+/* ---------- Main app ---------- */
+
+#app { position: fixed; inset: 0; }
+
+#map { position: absolute; inset: 0; z-index: 1; background: #0c0f14; }
+
+#ghost-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+}
+
+/* Full camera view (Crawl / debug mode) */
+#camera-view {
+  position: absolute;
+  inset: 0;
+  z-index: 600;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#camera-view video,
+#camera-view canvas {
+  position: absolute;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Picture-in-picture monitor */
+#pip {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  width: 280px;
+  aspect-ratio: 16 / 9;
+  z-index: 700;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+}
+
+#pip video,
+#pip canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#pip video { object-fit: cover; }
+
+.flipped { transform: scaleX(-1); }
+
+/* HUD */
+#hud {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 800;
+  padding: 10px 20px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Toolbar */
+#toolbar {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 800;
+  display: flex;
+  gap: 8px;
+}
+
+#toolbar button {
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#toolbar button:hover { border-color: var(--accent); }
+
+/* The model reads from this element; keep it rendering but invisible */
+#video-source {
+  position: fixed;
+  width: 2px;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Leaflet dark-ish attribution so it stays readable */
+.leaflet-control-attribution {
+  background: rgba(16, 20, 26, 0.75) !important;
+  color: var(--text-dim) !important;
+}
+.leaflet-control-attribution a { color: var(--accent) !important; }

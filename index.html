@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Desk View GIS — Gesture Map Demo</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- Start screen: pick where the Desk View feed comes from -->
+  <div id="start-screen">
+    <div class="start-card">
+      <h1>🖐️ Desk View GIS</h1>
+      <p class="tagline">Control OpenStreetMap with hand gestures over your desk.</p>
+
+      <div class="source-buttons">
+        <button id="btn-capture-window" class="primary">
+          🪟 Capture the Desk View window
+          <small>Pick the “Desk View” app window — no OBS needed</small>
+        </button>
+        <button id="btn-use-camera" class="primary">
+          📷 Use a camera
+          <small>Webcam, or OBS Virtual Camera streaming Desk View</small>
+        </button>
+      </div>
+
+      <div id="camera-picker" class="hidden">
+        <label for="camera-select">Camera</label>
+        <select id="camera-select"></select>
+      </div>
+
+      <div id="start-status" class="start-status"></div>
+
+      <div class="gesture-legend">
+        <div>🤏 <b>Pinch + drag</b> (one hand) — pan the map</div>
+        <div>🤏🤏 <b>Pinch both hands</b>, move apart/together — zoom</div>
+        <div>👉 <b>Point + hold</b> — drop a marker</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app -->
+  <div id="app" class="hidden">
+    <div id="map"></div>
+
+    <!-- Ghost hands are drawn above the map, never intercept clicks -->
+    <canvas id="ghost-canvas"></canvas>
+
+    <!-- Big camera view for the Crawl/debug mode -->
+    <div id="camera-view" class="hidden">
+      <video id="video-main" autoplay playsinline muted></video>
+      <canvas id="overlay-main"></canvas>
+    </div>
+
+    <!-- Picture-in-picture monitor, bottom right -->
+    <div id="pip">
+      <video id="video-pip" autoplay playsinline muted></video>
+      <canvas id="overlay-pip"></canvas>
+    </div>
+
+    <!-- Heads-up status -->
+    <div id="hud">
+      <span id="hud-gesture">✋ Show your hands to the camera</span>
+    </div>
+
+    <!-- Toolbar -->
+    <div id="toolbar">
+      <button id="btn-mode" title="Toggle between map mode and full camera view">🎥 Camera view</button>
+      <button id="btn-mirror" title="Flip the video horizontally">🪞 Mirror: off</button>
+      <button id="btn-clear-markers" title="Remove all dropped markers">🧹 Clear markers</button>
+      <button id="btn-change-source" title="Pick a different video source">🔄 Source</button>
+    </div>
+  </div>
+
+  <!-- Hidden video element that feeds the hand-pose model -->
+  <video id="video-source" autoplay playsinline muted></video>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
