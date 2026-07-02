@@ -1,9 +1,10 @@
 # UI Inspiration Brief
 
-> Drop inspiration images into this folder alongside this file — moodboard
-> tiles, or (more likely) screenshots of existing UIs with annotations
-> marking the features you like. Fill in the sections below, then kick off
-> with: "Run the design agent on design/inspo/."
+> Images land here two ways: copied in during triage of the "Ideas &
+> Feedback" Notion doc (the usual path — the idea's why/intent comes along
+> with them), or dropped in directly — moodboard tiles, or screenshots of
+> existing UIs with annotations marking the features you like. Fill in the
+> sections below, then kick off with: "Run the design agent on design/inspo/."
 >
 > The design agent will write back its interpretation of each image for your
 > confirmation before changing any code.
