@@ -113,6 +113,7 @@ async function enterApp({ mapOnly = false } = {}) {
     return;
   }
 
+  document.body.classList.remove("map-only"); // in case we came from bypass mode
   setStartStatus("Loading hand-tracking model…");
   await modelReady;
 
