@@ -20,6 +20,10 @@ repo as `.claude/agents/<agent-name>.md`, then set the property to `Synced`.
 If a sync fails or the doc is inconsistent, set it to `Issue` and write a
 short blurb in the "Sync note" property explaining what went wrong.
 
+Safety/security communication: the user is a designer. Explain every
+safety-related change scenario-first ("someone could…"), spell out acronyms
+on first use (CSP, SRI, PII), and prefer everyday analogies to jargon.
+
 The "Ideas & Feedback" doc (Category "Ideas") is the single idea-capture
 inbox. On "triage the ideas doc": move each Inbox item to Now (clear, worth
 it, next), Later (needs thinking), the owning agent doc's Backlog, or delete
