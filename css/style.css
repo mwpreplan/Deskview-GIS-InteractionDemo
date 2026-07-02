@@ -92,6 +92,12 @@ button.primary small { font-weight: 400; color: var(--text-dim); }
 .start-status { margin-top: 14px; min-height: 20px; color: var(--accent); font-size: 14px; }
 .start-status.error { color: #f87171; }
 
+.privacy-note {
+  margin: 18px 0 0;
+  color: var(--ok);
+  font-size: 13px;
+}
+
 .gesture-legend {
   margin-top: 26px;
   padding-top: 18px;

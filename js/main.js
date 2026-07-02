@@ -294,6 +294,12 @@ window.addEventListener("resize", () => {
   if (mapController) mapController.invalidateSize();
 });
 
+// Release the camera the moment the page goes away, not just on tab close.
+window.addEventListener("pagehide", () => {
+  stopDetection();
+  stopVideo(videoSource);
+});
+
 // ---------- Boot ----------
 
 if (!navigator.mediaDevices?.getUserMedia) {
