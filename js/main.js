@@ -8,8 +8,6 @@ import { MapController } from "./mapController.js";
 
 const el = (id) => document.getElementById(id);
 
-const startScreen = el("start-screen");
-const app = el("app");
 const videoSource = el("video-source");
 const videoPip = el("video-pip");
 const videoMain = el("video-main");
@@ -21,6 +19,12 @@ const hudGesture = el("hud-gesture");
 const startStatus = el("start-status");
 const cameraPicker = el("camera-picker");
 const cameraSelect = el("camera-select");
+
+// Functional overlay colors — kept distinguishable (incl. color-blind), and
+// in sync with the CSS tokens (--hand-right / --hand-left / --dwell / --pinch).
+const HAND_COLORS = { colorRight: "#0ea5e9", colorLeft: "#ec4899" };
+const DWELL_COLOR = "#16a34a";
+const PINCH_COLOR = "#f59e0b";
 
 const state = {
   mirrored: false,
@@ -84,11 +88,30 @@ cameraSelect.addEventListener("change", async () => {
   }
 });
 
+// Bypass: skip the camera entirely and land straight on the map (mouse-driven).
+el("btn-skip").addEventListener("click", () => enterApp({ mapOnly: true }));
+
 // ---------- App lifecycle ----------
 
-async function enterApp() {
+function switchToApp() {
+  document.body.classList.remove("state-splash");
+  document.body.classList.add("state-app");
+  // Re-flow Leaflet once the layout settles and once more after the transition.
+  mapController.invalidateSize();
+  setTimeout(() => mapController.invalidateSize(), 450);
+}
+
+async function enterApp({ mapOnly = false } = {}) {
   if (state.running) return;
   state.running = true;
+
+  if (mapOnly) {
+    document.body.classList.add("map-only");
+    clearGhost();
+    switchToApp();
+    setHud("Map-only mode — drag and scroll to explore. No camera in use.");
+    return;
+  }
 
   setStartStatus("Loading hand-tracking model…");
   await modelReady;
@@ -97,11 +120,7 @@ async function enterApp() {
   videoPip.srcObject = videoSource.srcObject;
   videoMain.srcObject = videoSource.srcObject;
 
-  startScreen.classList.add("hidden");
-  app.classList.remove("hidden");
-
-  if (!mapController) mapController = new MapController("map");
-  mapController.invalidateSize();
+  switchToApp();
 
   gestureEngine.reset();
   startDetection(videoSource, onHands);
@@ -113,14 +132,29 @@ function handleSourceLost() {
   leaveApp("Video source ended — pick a new one.");
 }
 
+function resetToolbar() {
+  state.cameraViewMode = false;
+  state.mirrored = false;
+  cameraView.classList.add("hidden");
+  videoPip.classList.remove("flipped");
+  videoMain.classList.remove("flipped");
+  const mode = el("btn-mode");
+  mode.classList.remove("is-active");
+  mode.querySelector("use").setAttribute("href", "#i-video");
+  mode.querySelector(".tool-label").textContent = "Camera";
+  el("btn-mirror").classList.remove("is-active");
+}
+
 function leaveApp(message = "") {
   state.running = false;
   stopDetection();
   stopVideo(videoSource);
   videoPip.srcObject = null;
   videoMain.srcObject = null;
-  app.classList.add("hidden");
-  startScreen.classList.remove("hidden");
+  clearGhost();
+  resetToolbar();
+  document.body.classList.remove("state-app", "map-only");
+  document.body.classList.add("state-splash");
   cameraPicker.classList.add("hidden");
   setStartStatus(message);
 }
@@ -171,6 +205,11 @@ function sizeCanvas(canvas, w, h) {
   if (canvas.height !== h) canvas.height = h;
 }
 
+function clearGhost() {
+  const ctx = ghostCanvas.getContext("2d");
+  ctx.clearRect(0, 0, ghostCanvas.width, ghostCanvas.height);
+}
+
 // Stretch video coords onto a w×h canvas (matches MapController mapping).
 function stretchTransform(vw, vh, w, h) {
   return (kp) => ({ x: (kp.x / vw) * w, y: (kp.y / vh) * h });
@@ -186,7 +225,7 @@ function coverTransform(vw, vh, w, h) {
 
 function drawDwellRing(ctx, pt, progress) {
   ctx.save();
-  ctx.strokeStyle = "#4ade80";
+  ctx.strokeStyle = DWELL_COLOR;
   ctx.lineWidth = 5;
   ctx.beginPath();
   ctx.arc(pt.x, pt.y, 26, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2);
@@ -196,7 +235,7 @@ function drawDwellRing(ctx, pt, progress) {
 
 function drawPinchDots(ctx, points, transform) {
   ctx.save();
-  ctx.fillStyle = "#facc15";
+  ctx.fillStyle = PINCH_COLOR;
   for (const p of points) {
     const t = transform(p);
     ctx.beginPath();
@@ -219,7 +258,7 @@ function renderLoop() {
   gctx.clearRect(0, 0, ghostCanvas.width, ghostCanvas.height);
   if (!state.cameraViewMode) {
     const t = stretchTransform(vw, vh, ghostCanvas.width, ghostCanvas.height);
-    drawHands(gctx, hands, t, { alpha: 0.35, lineWidth: 6, nodeRadius: 7 });
+    drawHands(gctx, hands, t, { alpha: 0.5, lineWidth: 6, nodeRadius: 7, ...HAND_COLORS });
     drawPinchDots(gctx, gesture.pinchPoints, t);
     if (gesture.dwellPoint) drawDwellRing(gctx, t(gesture.dwellPoint), gesture.dwellProgress);
   }
@@ -229,7 +268,7 @@ function renderLoop() {
   sizeCanvas(overlayPip, pipW, pipH);
   const pctx = overlayPip.getContext("2d");
   pctx.clearRect(0, 0, pipW, pipH);
-  drawHands(pctx, hands, coverTransform(vw, vh, pipW, pipH), { lineWidth: 2, nodeRadius: 3 });
+  drawHands(pctx, hands, coverTransform(vw, vh, pipW, pipH), { lineWidth: 2, nodeRadius: 3, ...HAND_COLORS });
 
   // Full camera view (Crawl / debug mode).
   if (state.cameraViewMode) {
@@ -238,7 +277,7 @@ function renderLoop() {
     const mctx = overlayMain.getContext("2d");
     mctx.clearRect(0, 0, overlayMain.width, overlayMain.height);
     const t = (kp) => ({ x: kp.x * scale, y: kp.y * scale });
-    drawHands(mctx, hands, t, { lineWidth: 3, nodeRadius: 5 });
+    drawHands(mctx, hands, t, { lineWidth: 3, nodeRadius: 5, ...HAND_COLORS });
     drawPinchDots(mctx, gesture.pinchPoints, t);
     if (gesture.dwellPoint) drawDwellRing(mctx, t(gesture.dwellPoint), gesture.dwellProgress);
   }
@@ -247,39 +286,46 @@ function renderLoop() {
   requestAnimationFrame(renderLoop);
 }
 
+function setHud(text) {
+  if (hudGesture.textContent !== text) hudGesture.textContent = text;
+}
+
 function updateHud() {
   const g = state.gesture;
   let text;
   if (performance.now() < state.markerFlashUntil) {
-    text = "📍 Marker dropped!";
+    text = "Marker dropped";
   } else if (g.gesture === "pan") {
-    text = "🤏 Panning";
+    text = "Panning";
   } else if (g.gesture === "zoom") {
-    text = "🔍 Zooming";
+    text = "Zooming";
   } else if (g.gesture === "point") {
-    text = `👉 Hold to drop marker… ${Math.round((g.dwellProgress || 0) * 100)}%`;
+    text = `Hold to drop marker… ${Math.round((g.dwellProgress || 0) * 100)}%`;
   } else if (g.gesture === "hands") {
-    text = "✋ Hands detected — pinch to pan, point to drop a marker";
+    text = "Hands detected — pinch to pan, point to drop a marker";
   } else {
-    text = "✋ Show your hands to the camera";
+    text = "Show your hands to the camera";
   }
-  if (hudGesture.textContent !== text) hudGesture.textContent = text;
+  setHud(text);
 }
 
 // ---------- Toolbar ----------
 
-el("btn-mode").addEventListener("click", (e) => {
+el("btn-mode").addEventListener("click", () => {
   state.cameraViewMode = !state.cameraViewMode;
   cameraView.classList.toggle("hidden", !state.cameraViewMode);
-  e.target.textContent = state.cameraViewMode ? "🗺️ Map view" : "🎥 Camera view";
+  const btn = el("btn-mode");
+  btn.classList.toggle("is-active", state.cameraViewMode);
+  btn.querySelector("use").setAttribute("href", state.cameraViewMode ? "#i-map" : "#i-video");
+  btn.querySelector(".tool-label").textContent = state.cameraViewMode ? "Map" : "Camera";
 });
 
-el("btn-mirror").addEventListener("click", (e) => {
+el("btn-mirror").addEventListener("click", () => {
   state.mirrored = !state.mirrored;
   videoPip.classList.toggle("flipped", state.mirrored);
   videoMain.classList.toggle("flipped", state.mirrored);
   gestureEngine.reset();
-  e.target.textContent = `🪞 Mirror: ${state.mirrored ? "on" : "off"}`;
+  el("btn-mirror").classList.toggle("is-active", state.mirrored);
 });
 
 el("btn-clear-markers").addEventListener("click", () => {
@@ -287,7 +333,7 @@ el("btn-clear-markers").addEventListener("click", () => {
 });
 
 el("btn-change-source").addEventListener("click", () => {
-  leaveApp("Pick a new video source.");
+  leaveApp("Pick a video source to begin.");
 });
 
 window.addEventListener("resize", () => {
@@ -302,8 +348,12 @@ window.addEventListener("pagehide", () => {
 
 // ---------- Boot ----------
 
+// The map is created up front so it renders behind the frosted splash as a
+// blurred preview of the interaction space.
+mapController = new MapController("map");
+
 if (!navigator.mediaDevices?.getUserMedia) {
-  setStartStatus("This browser doesn't support camera access.", true);
+  setStartStatus("This browser doesn't support camera access — use Skip to map.", true);
 } else {
   modelReady = loadModel().catch((err) => {
     setStartStatus(`Failed to load hand-tracking model: ${err.message}`, true);

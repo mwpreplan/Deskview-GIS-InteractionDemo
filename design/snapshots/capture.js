@@ -18,16 +18,16 @@ const STAMP = process.argv[3];
   await page.setViewport({ width: 1280, height: 800 });
 
   await page.goto("http://127.0.0.1:8080", { waitUntil: "networkidle2" });
-  await new Promise((r) => setTimeout(r, 1500)); // let fonts/model settle
+  await new Promise((r) => setTimeout(r, 2500)); // fonts + map tiles behind splash
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
   await page.screenshot({ path: `${OUT_DIR}/${STAMP}-start-screen.png` });
   console.log("captured start screen");
 
-  // Enter the app with the fake camera and wait for map + PiP to be live.
+  // Enter the app with the fake camera and wait for the app state to activate.
   await page.click("#btn-use-camera");
-  await page.waitForSelector("#app:not(.hidden)", { timeout: 60000 });
-  await new Promise((r) => setTimeout(r, 6000)); // map tiles + detection warm-up
+  await page.waitForSelector("body.state-app", { timeout: 60000 });
+  await new Promise((r) => setTimeout(r, 6000)); // map reflow + detection warm-up
   await page.screenshot({ path: `${OUT_DIR}/${STAMP}-map-view.png` });
   console.log("captured map view");
 
