@@ -20,6 +20,14 @@ repo as `.claude/agents/<agent-name>.md`, then set the property to `Synced`.
 If a sync fails or the doc is inconsistent, set it to `Issue` and write a
 short blurb in the "Sync note" property explaining what went wrong.
 
+The "Ideas & Feedback" doc (Category "Ideas") is the single idea-capture
+inbox. On "triage the ideas doc": move each Inbox item to Now (clear, worth
+it, next), Later (needs thinking), the owning agent doc's Backlog, or delete
+it — and sharpen each item's "why/intent" line while triaging (the user
+wants the reasoning preserved for portfolio documentation). Images backing
+an implementable idea get copied into design/inspo/ at triage. When work
+ships, move its item to the doc's Shipped section with why + outcome.
+
 ## Architecture
 
 - `index.html` — start screen (source picker), map, PiP, HUD, toolbar
