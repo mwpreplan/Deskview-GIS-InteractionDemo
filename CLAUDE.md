@@ -14,9 +14,11 @@ Consult these before changing scope; the phases (Crawl → Walk → Run) define
 the feature checkpoints.
 
 Docs in the database with Category = "Agents" are Claude Code agent designs
-(see the "Agent Template" page). When one has Status `Ready`, sync it into
-this repo as `.claude/agents/<agent-name>.md`; the Notion doc is the source
-of truth for the agent's prompt, tools, and boundaries.
+(see the "Agent Template" page). Lifecycle is tracked in the database's
+"Agent Status" select property: when a doc is `Ready`, sync it into this
+repo as `.claude/agents/<agent-name>.md`, then set the property to `Synced`.
+If a sync fails or the doc is inconsistent, set it to `Issue` and write a
+short blurb in the "Sync note" property explaining what went wrong.
 
 ## Architecture
 
